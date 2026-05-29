@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>点子库 · 设计文档</title>
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --muted: #6b6b6b;
+    --bg: #fafafa;
+    --line: #e3e3e3;
+    --accent: #0a66c2;
+    --code-bg: #f1f1ef;
+    --warn-bg: #fff7e0;
+    --warn-line: #e8c878;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    padding: 32px 20px 80px;
+    font: 15px/1.7 -apple-system, "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  main { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 20px; margin: 36px 0 12px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  code {
+    font-family: ui-monospace, "JetBrains Mono", Menlo, monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font: 12.5px/1.55 ui-monospace, Menlo, monospace;
+  }
+  pre code { background: transparent; padding: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th { background: #f1f1ef; font-weight: 600; }
+  .note {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn-line);
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 13.5px;
+  }
+  .schema { display: grid; grid-template-columns: 140px 1fr; gap: 4px 12px; font-size: 13.5px; }
+  .schema .k { font-family: ui-monospace, Menlo, monospace; color: #444; }
+  .ascii { white-space: pre; line-height: 1.4; }
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background: #e8efff;
+    color: var(--accent);
+    margin-left: 6px;
+    vertical-align: 1px;
+  }
+  .pill.warn { background: #fde8d4; color: #a45a0d; }
+  .pill.muted { background: #ececec; color: #555; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 40px 0; }
+  .toc { font-size: 13.5px; color: var(--muted); margin-bottom: 28px; }
+  .toc a { color: var(--accent); text-decoration: none; margin-right: 14px; }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>点子库 · 设计文档</h1>
+<div class="sub">sub-app <code>app/ideas/</code> · v0 设计稿 · 2026-05-16</div>
+
+<div class="toc">
+  <a href="#why">#定位</a>
+  <a href="#flow">#核心流程</a>
+  <a href="#model">#数据模型</a>
+  <a href="#layout">#文件布局</a>
+  <a href="#api">#API</a>
+  <a href="#distill">#文档机制</a>
+  <a href="#ui">#UI</a>
+  <a href="#prompt">#Prompt</a>
+  <a href="#milestones">#里程碑</a>
+  <a href="#open">#待定</a>
+</div>
+
+<!-- =========================================================== -->
+<h2 id="why">1. 定位与目标</h2>
+
+<p>
+点子库是一个<strong>「想法 × 对话 × 文档」</strong>三位一体的私人创作助手：
+</p>
+<ul>
+  <li>每个 <strong>点子</strong> 是一份会持续演化的 markdown 文档（"这个点子到底是什么"的当下最佳表述）。</li>
+  <li>每个点子下能开任意多场 <strong>对话</strong>，从不同角度跟 LLM 讨论它（验证用户、设计交互、追问竞品、撕方案、写文案……）。</li>
+  <li>聊到有价值的内容时，一键把这场对话<strong>「整理进点子文档」</strong>，由 LLM 重写出新版文档，旧版进历史。</li>
+</ul>
+<p>核心张力：<em>聊天可以发散，文档必须收敛。</em> 不让对话直接污染文档，而是用一次显式动作把信号沉淀下来。</p>
+
+<div class="note">
+<strong>跟 agent_lord 的关系：</strong>
+agent_lord 是「<em>一份</em>设计文档 + 多对话」。点子库是「<em>多份</em>点子文档 + 每份点子下的多对话」。
+点子库 ≈ agent_lord × N，但加一个新原语：<strong>对话 → 文档的 distill 动作</strong>。
+后端范式抄 <code>app/agent_lord/api/research.py</code> 即可，多套一层 <code>idea</code> 层级。
+</div>
+
+<!-- =========================================================== -->
+<h2 id="flow">2. 核心使用流</h2>
+
+<ol>
+  <li>新建点子 → 给个标题（文档暂时是空的）。</li>
+  <li>点开点子 → 看到文档（空 / 当前版本）+ 已有对话列表。</li>
+  <li>新建对话 → 跟 LLM 聊，prompt 里自动注入当前文档作为上下文。</li>
+  <li>聊到关键处 → 按「整理到文档」→ 后台 LLM 输出新版文档全文 → 覆盖写入，旧版进历史。</li>
+  <li>再开新对话 → LLM 看到的是已沉淀过的最新文档，对话起点更高。</li>
+</ol>
+
+<p>关键体验：第一次开聊 = 跟一个完全不了解你点子的人讲。第 N 次开聊 = 跟一个已经读完最新设计稿的合伙人讲。</p>
+
+<!-- =========================================================== -->
+<h2 id="model">3. 数据模型</h2>
+
+<h3>Idea</h3>
+<div class="schema">
+  <div class="k">id</div>            <div>12-hex string, 主键</div>
+  <div class="k">title</div>         <div>用户起的标题（也可由首次 distill 自动生成）</div>
+  <div class="k">doc_path</div>      <div>当前文档 md 文件路径，<code>ideas/&lt;iid&gt;.md</code></div>
+  <div class="k">created_ts</div>    <div>int unix</div>
+  <div class="k">updated_ts</div>    <div>int unix；文档或元数据最后一次变更</div>
+  <div class="k">conv_count</div>    <div>下挂对话数（冗余字段，加速列表渲染）</div>
+  <div class="k">doc_chars</div>     <div>当前文档字符数（列表页显示"X 字"）</div>
+</div>
+
+<h3>Conversation</h3>
+<div class="schema">
+  <div class="k">id</div>            <div>12-hex string</div>
+  <div class="k">idea_id</div>       <div>所属点子</div>
+  <div class="k">title</div>         <div>首轮对话后异步生成的 5-12 字标题（抄 agent_lord）</div>
+  <div class="k">last_role</div>     <div>"user" | "assistant"</div>
+  <div class="k">last_preview</div>  <div>最后一条消息前 80 字</div>
+  <div class="k">last_ts</div>       <div>int unix</div>
+  <div class="k">count</div>         <div>消息数</div>
+  <div class="k">created_ts</div>    <div>int unix</div>
+  <div class="k">distilled_count</div><div>到目前为止本对话被 distill 进文档的次数（≥1 表示已贡献过）</div>
+</div>
+
+<h3>Message</h3>
+<p>JSONL 一行一条，跟 agent_lord 完全一致：</p>
+<pre><code>{"role": "user", "content": "...", "ts": 1778572467}
+{"role": "assistant", "content": "...", "ts": 1778572468}</code></pre>
+
+<h3>Doc History</h3>
+<p>每次 distill 在覆盖 <code>&lt;iid&gt;.md</code> 之前，先把旧文档拷到 <code>ideas/history/&lt;iid&gt;.&lt;ts&gt;.md</code>。历史列表按文件名时间戳排序即可，无索引。</p>
+
+<!-- =========================================================== -->
+<h2 id="layout">4. 文件布局</h2>
+
+<p>代码（入 git）：</p>
+<pre class="ascii">app/ideas/
+├── manifest.json
+├── DESIGN.html                       ← 本文档
+├── api/
+│   ├── __init__.py                   ← register(router, ctx)，路由表
+│   └── core.py                       ← bind(ctx) + handler 函数
+└── ui/
+    ├── index.ts                      ← export { manifest, Mobile, Desktop }
+    ├── api.ts                        ← apiFetch 包装本 sub-app 路由
+    ├── desktop/                      ← &gt;= 768px
+    │   ├── index.tsx
+    │   ├── IdeasList.tsx
+    │   ├── IdeaDetail.tsx
+    │   └── ConversationView.tsx
+    └── mobile/                       ← &lt; 768px
+        ├── index.tsx
+        ├── IdeasListScreen.tsx
+        ├── IdeaDetailScreen.tsx
+        └── ConversationScreen.tsx
+</pre>
+
+<p>运行时数据（gitignored，统一落根 <code>data/sub_app/ideas/</code>）：</p>
+<pre class="ascii">data/sub_app/ideas/
+├── ideas/
+│   ├── index.json                    ← {iid: {title, updated_ts, conv_count, doc_chars, created_ts}}
+│   ├── &lt;iid&gt;.md                      ← 当前文档
+│   └── history/
+│       └── &lt;iid&gt;.&lt;ts&gt;.md             ← 每次 distill 前的旧版快照
+└── conversations/
+    ├── index.json                    ← {cid: {idea_id, title, last_*, count, created_ts, distilled_count}}
+    └── &lt;cid&gt;.jsonl
+</pre>
+
+<!-- =========================================================== -->
+<h2 id="api">5. API 路由 <span class="pill">prefix: /api/ideas</span></h2>
+
+<table>
+<thead><tr><th>方法</th><th>路径</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td>GET</td><td><code>/ideas</code></td><td>列点子（按 updated_ts desc）</td></tr>
+<tr><td>POST</td><td><code>/ideas</code></td><td>新建点子，body: <code>{title?}</code></td></tr>
+<tr><td>GET</td><td><code>/ideas/&lt;iid&gt;</code></td><td>详情：meta + doc_markdown + 对话列表摘要</td></tr>
+<tr><td>PATCH</td><td><code>/ideas/&lt;iid&gt;</code></td><td>改 title 或手动改 doc，body: <code>{title?, doc?}</code></td></tr>
+<tr><td>DELETE</td><td><code>/ideas/&lt;iid&gt;</code></td><td>删点子（连带删全部对话和历史）</td></tr>
+<tr><td>GET</td><td><code>/ideas/&lt;iid&gt;/history</code></td><td>历史版本列表 <code>[{ts, chars}]</code></td></tr>
+<tr><td>GET</td><td><code>/ideas/&lt;iid&gt;/history/&lt;ts&gt;</code></td><td>取某个历史版本的 markdown</td></tr>
+<tr><td>POST</td><td><code>/ideas/&lt;iid&gt;/history/&lt;ts&gt;/restore</code></td><td>把历史版本还原为当前（旧"当前"也存历史）</td></tr>
+<tr><td>GET</td><td><code>/ideas/&lt;iid&gt;/conversations</code></td><td>本点子下的对话列表</td></tr>
+<tr><td>POST</td><td><code>/ideas/&lt;iid&gt;/conversations</code></td><td>新建对话</td></tr>
+<tr><td>GET</td><td><code>/ideas/&lt;iid&gt;/conversations/&lt;cid&gt;</code></td><td>对话详情（消息流）</td></tr>
+<tr><td>POST</td><td><code>/ideas/&lt;iid&gt;/conversations/&lt;cid&gt;</code></td><td>发消息（MVP 同步）；body: <code>{message}</code></td></tr>
+<tr><td>DELETE</td><td><code>/ideas/&lt;iid&gt;/conversations/&lt;cid&gt;</code></td><td>删对话</td></tr>
+<tr><td>POST</td><td><code>/ideas/&lt;iid&gt;/conversations/&lt;cid&gt;/distill</code></td><td><strong>核心动作</strong>：把本对话整理进文档</td></tr>
+</tbody>
+</table>
+
+<div class="note">
+<strong>关于流式：</strong>MVP 先用同步路径（<code>_call_claude</code>，跟 agent_lord 一样），180s 超时内出结果。
+体验觉得慢了再迁到壳子 SSE：把本对话桥接到 <code>/api/conversations/&lt;cid&gt;/stream</code>，prompt 由 sub-app 注入。
+不要 sub-app 自己起流式 subprocess（详见 <code>CLAUDE.md §1.2</code> 的踩坑清单）。
+</div>
+
+<!-- =========================================================== -->
+<h2 id="distill">6. 核心机制：对话 → 文档</h2>
+
+<p>这是这个产品的唯一新原语。三种可选实现路径：</p>
+
+<table>
+<thead><tr><th>方案</th><th>触发</th><th>优点</th><th>缺点</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>A 显式按钮</strong> <span class="pill">MVP</span></td>
+  <td>用户在对话页点「整理到文档」</td>
+  <td>简单、可控、失败影响小</td>
+  <td>用户得记得点</td>
+</tr>
+<tr>
+  <td>B 隐式输出</td>
+  <td>主对话 prompt 里允许 LLM 在 <code>&lt;doc&gt;...&lt;/doc&gt;</code> 块里输出新版</td>
+  <td>无操作成本</td>
+  <td>很容易误更新；流式中难裁剪展示</td>
+</tr>
+<tr>
+  <td>C 后台自动</td>
+  <td>每轮回复后台多调一次 distill</td>
+  <td>体验丝滑</td>
+  <td>成本翻倍；用户聊野时文档会乱跳</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>选 A 做 MVP。</strong> 跑通后视体验决定要不要叠 B/C。</p>
+
+<h3>Distill 调用流程</h3>
+<ol>
+  <li>前端 POST <code>/conversations/&lt;cid&gt;/distill</code>，可选 body <code>{scope: "all" | "recent_n", n?: 8}</code>，默认 <code>all</code>。</li>
+  <li>后端读：当前文档 + 该对话全部（或最近 N 轮）消息。</li>
+  <li>拼 distill prompt（见 §8.2），同步调 <code>_call_claude</code>。</li>
+  <li>校验返回：非空、不是 <code>[错误：...]</code>、长度合理（≥10 字符 &amp; ≤ 当前文档的 10 倍，防爆炸）。</li>
+  <li>把旧文档拷到 <code>history/&lt;iid&gt;.&lt;ts&gt;.md</code>，新版写入 <code>&lt;iid&gt;.md</code>。</li>
+  <li>更新 idea index：<code>updated_ts</code>、<code>doc_chars</code>；更新 conv index：<code>distilled_count += 1</code>。</li>
+  <li>返回 <code>{doc: "新版 md", history_ts: N, diff: {added: 12, removed: 3}}</code>。</li>
+</ol>
+
+<p>失败时不动文件，返回 <code>{error: "..."}</code>，前端 toast 提示。</p>
+
+<!-- =========================================================== -->
+<h2 id="ui">7. UI 流程</h2>
+
+<h3>7.1 移动 <span class="pill muted">&lt; 768px</span></h3>
+<p>三屏 stack，前进/后退切换：</p>
+<pre class="ascii">┌────────────────────┐    ┌────────────────────┐    ┌────────────────────┐
+│ 点子库             │    │ ← 某个点子          │    │ ← 某场对话          │
+│ + 新建             │    │                    │    │                    │
+├────────────────────┤    │  📄 文档预览        │    │  📄 文档贴顶折叠条  │
+│ 点子 A     12 字   │ →  │  (markdown render) │ →  │  ──────────────    │
+│ 12 段对话 · 昨天   │    │  [展开 / 编辑]      │    │  user: ...         │
+├────────────────────┤    │  ──────────────    │    │  ai:   ...         │
+│ 点子 B     0 字    │    │  💬 对话 (3)        │    │  ...               │
+│ 还没开聊           │    │  + 新对话           │    │  ──────────────    │
+├────────────────────┤    │  · 对话 1  昨天     │    │  [整理到文档]      │
+│ ...                │    │  · 对话 2  3 天前   │    │  [输入框 ............]│
+└────────────────────┘    └────────────────────┘    └────────────────────┘
+   IdeasListScreen           IdeaDetailScreen           ConversationScreen</pre>
+
+<p>移动端必须遵守 baseline（<code>CLAUDE.md §4.3</code>）：viewport meta + 禁双指缩放 + 输入框 ≥ 16px + safe-area + <code>100dvh</code>。</p>
+
+<h3>7.2 桌面 <span class="pill muted">≥ 768px</span></h3>
+
+<pre class="ascii">┌──────────────┬──────────────────────────┬──────────────────────────┐
+│ 点子库 [+]   │ 某个点子                  │ 某场对话                  │
+├──────────────┤  标题 [...]               │  顶部 chip: 文档 8.2k 字   │
+│ · 点子 A     │  ──────────────          │  ──────────────          │
+│   昨天 · 12  │  📄 文档 (markdown)       │  user: ...               │
+│ · 点子 B     │  ...                     │  ai:   ...               │
+│   3 天前     │  ──────────────          │  ...                     │
+│ · 点子 C     │  💬 对话 (3) [+]          │  ──────────────          │
+│              │   - 对话 1 · 昨天         │  [输入框 ........] [发送]  │
+│ ...          │   - 对话 2 · 3 天前       │  [整理到文档]             │
+└──────────────┴──────────────────────────┴──────────────────────────┘
+   side列表       中间: IdeaDetail         右: ConversationView</pre>
+
+<h3>7.3 关键交互细节</h3>
+<ul>
+  <li>「整理到文档」按钮位置：对话页顶部右上 / 移动端是底部输入区上方的小条；按下后变 loading 状态，整段时间禁用输入框。</li>
+  <li>distill 成功后弹一个 <em>非模态</em> 提示条："文档已更新 · +12 / -3 行 · 查看 / 撤销"。撤销 = 调 <code>/history/&lt;prev_ts&gt;/restore</code>。</li>
+  <li>对话列表里，至少 distill 过一次的对话标个 ✓ 角标，便于知道哪些对话已被沉淀。</li>
+  <li>文档预览长度限制：mobile 折叠条只显示前 3 行，点开后全屏 sheet；桌面默认展开高度 60vh，超出滚动。</li>
+  <li>编辑文档：MVP 用 <code>&lt;textarea&gt;</code> 直接改，PATCH 保存。富文本编辑器以后再说。</li>
+</ul>
+
+<!-- =========================================================== -->
+<h2 id="prompt">8. Prompt 设计</h2>
+
+<h3>8.1 对话主 prompt（每轮发消息时）</h3>
+
+<pre><code>你正在帮{用户名}打磨一个产品点子。下面是这个点子的当前文档和最近对话。
+你的回答要简洁、具体、直接，必要时反驳他的想法。默认中文，除非他用英文。
+不要客套、不要总结自己刚说过的话，不要堆砌 markdown 标题。
+
+=== 当前点子文档 ===
+{doc 全文，如果为空填 "（文档暂时为空，刚开始聊这个点子）"}
+=== 文档结束 ===
+
+此前对话（最近 12 轮）：
+用户：{...}
+你：{...}
+...
+
+用户：{新消息}
+你：</code></pre>
+
+<h3>8.2 Distill prompt（整理到文档）</h3>
+
+<pre><code>你正在帮{用户名}整理一个产品点子的设计文档。下面是当前文档和最近这场对话。
+请基于对话内容，输出新版文档（markdown），要求：
+
+- 保留当前文档的核心结构和已有有效内容
+- 把对话里有价值的新想法、新判断、新决定，融进对应章节
+- 如果对话推翻了文档里的某个判断，更新它，不要保留矛盾的两份
+- 对话里的发散、闲聊、反例可以不收录
+- 不要添加"更新日志""本次修改"这类元信息
+- 不要解释你做了什么，直接输出 markdown 文档全文
+- 不要用 ```markdown 代码块包裹
+
+=== 当前文档 ===
+{doc 或 "（文档暂时为空）"}
+=== 文档结束 ===
+
+=== 本场对话 ===
+用户：{...}
+你：{...}
+...
+=== 对话结束 ===
+
+新版文档（直接输出 markdown）：</code></pre>
+
+<h3>8.3 对话标题 prompt</h3>
+<p>复用 agent_lord 的 <code>build_title_prompt</code>，原样照抄即可。</p>
+
+<!-- =========================================================== -->
+<h2 id="milestones">9. 里程碑</h2>
+
+<table>
+<thead><tr><th>M</th><th>范围</th><th>验收</th></tr></thead>
+<tbody>
+<tr>
+  <td>M1</td>
+  <td>后端骨架：manifest + register/bind + ideas/conversations 的 CRUD（无 LLM）</td>
+  <td>curl 能新建点子、新建对话、列表、删除</td>
+</tr>
+<tr>
+  <td>M2</td>
+  <td>对话接通 LLM（同步路径，复用 <code>_call_claude</code>）+ 异步标题生成</td>
+  <td>能发消息收到回复，对话标题异步出现</td>
+</tr>
+<tr>
+  <td>M3</td>
+  <td>前端移动版三屏（list / detail / chat），桌面三栏</td>
+  <td>手机和桌面浏览器都跑得起来，能完整聊一轮</td>
+</tr>
+<tr>
+  <td>M4</td>
+  <td>Distill：整理到文档 + 历史快照 + 撤销</td>
+  <td>能把对话整理进文档，能在历史里翻旧版并恢复</td>
+</tr>
+<tr>
+  <td>M5 <span class="pill muted">可选</span></td>
+  <td>手动编辑文档（textarea + PATCH）</td>
+  <td>能在 UI 里直接改文档保存</td>
+</tr>
+<tr>
+  <td>M6 <span class="pill muted">未来</span></td>
+  <td>流式聊天 / 文档 diff 视图 / 自动 distill</td>
+  <td>—</td>
+</tr>
+</tbody>
+</table>
+
+<!-- =========================================================== -->
+<h2 id="open">10. 待定问题（请拍板或留默认）</h2>
+
+<table>
+<thead><tr><th>#</th><th>问题</th><th>默认提案</th></tr></thead>
+<tbody>
+<tr>
+  <td>Q1</td>
+  <td>Distill 范围：整个对话 vs 用户选择的消息？</td>
+  <td>整个对话（最简）。后期加 "选段 distill"</td>
+</tr>
+<tr>
+  <td>Q2</td>
+  <td>点子文档要不要预置模板章节（问题/方案/竞品/风险/MVP）？</td>
+  <td>不预置。首次 distill 让 LLM 自然组织出结构</td>
+</tr>
+<tr>
+  <td>Q3</td>
+  <td>跨点子聊天 / 引用其他点子？</td>
+  <td>否。每场对话只属于一个点子</td>
+</tr>
+<tr>
+  <td>Q4</td>
+  <td>标签 / 分类 / 收藏？</td>
+  <td>MVP 不做。列表按 updated_ts 排序就够</td>
+</tr>
+<tr>
+  <td>Q5</td>
+  <td>移动 / 桌面入口位置？</td>
+  <td>跟 agent_lord 一致：<code>openFrom: "projects"</code>，桌面 <code>section: "projects"</code>，label "点子库"</td>
+</tr>
+<tr>
+  <td>Q6</td>
+  <td>文档长度上限？</td>
+  <td>软上限 50k 字符（distill 时校验，超了拒绝写入并报错）</td>
+</tr>
+<tr>
+  <td>Q7</td>
+  <td>对话里 LLM 能不能用工具（读文件/搜网）？</td>
+  <td>否。MVP 纯文本对话，跟壳子裸聊一致（<code>--permission-mode bypassPermissions</code> 但不主动调工具）</td>
+</tr>
+<tr>
+  <td>Q8</td>
+  <td>删点子时连带删对话和历史 vs 软删除？</td>
+  <td>硬删除 + 删除前在 server 端 log 路径（便于事后从备份找回）</td>
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+<p style="color: var(--muted); font-size: 13px;">
+等你审完这份设计、Q1-Q8 拍完板，就按 §9 的 M1 开始搭骨架。
+有需要改的地方就直接在这文件里说，或者口头告诉我"Q2 改成预置模板"之类。
+</p>
+
+</main>
+</body>
+</html>

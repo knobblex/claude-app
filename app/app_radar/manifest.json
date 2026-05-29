@@ -1,0 +1,21 @@
+{
+  "id": "radar",
+  "name": "Hot App Radar",
+  "icon": "radar",
+  "version": 1,
+  "backend": {
+    "module": "app.app_radar.api",
+    "prefix": "/api/radar",
+    "data_dirs": {
+      "root": ".",
+      "apps": "apps",
+      "games": "games",
+      "reports": "reports"
+    }
+  },
+  "frontend": {
+    "entry": "ui/index.ts",
+    "mobile": { "openFrom": "projects", "label": "雷达" },
+    "desktop": { "section": "projects", "label": "Hot Apps" }
+  }
+}

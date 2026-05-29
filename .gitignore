@@ -1,0 +1,29 @@
+.env
+
+# 代理配置（含账号凭证，禁止入库）
+tools/clash/
+
+# 所有运行时/生成数据统一落 data/ 下：
+#   data/                     —— 壳子（裸聊 conversations、titles、interrupts 等）
+#   data/sub_app/<sub-id>/    —— 各 sub-app 的运行时数据 + 生成内容
+# 子应用运行时/用户数据（candidates / snapshots / chats / notes / favorites / seen）
+app/*/data/
+# 子应用生成内容（卷宗 markdown + 每日扫描日报）
+app/*/apps/
+app/*/games/
+app/*/reports/
+data/
+data.zip
+
+# 系统 / 编辑器垃圾
+.DS_Store
+__pycache__/
+*.pyc
+
+# 本机 Claude Code / 工具配置（与本项目无关，不入库）
+# 注意：只忽略根目录 .claude/，子应用自带的 app/*/.claude/（如 radar skill）仍入库
+/.claude/
+/.agents/
+/.continue/
+/skills/
+/skills-lock.json

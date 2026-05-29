@@ -1,0 +1,1706 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mobile UI · v1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-soft: #fafaf9;
+      --bg-list: #fcfcfb;
+      --border: rgba(20,20,20,0.07);
+      --border-strong: rgba(20,20,20,0.14);
+      --divider: rgba(20,20,20,0.05);
+      --text1: #1a1a1a;
+      --text2: #5a5a5a;
+      --text3: #9a9a9a;
+      --accent: #1f1f1f;
+      --blue: #2383e2;
+      --blue-soft: #eaf3fb;
+      --user-soft: #fff5ec;
+      --user-deep: #c2410c;
+      --conv-soft: #ecf2fb;
+      --conv-deep: #2563eb;
+    }
+    body {
+      font-family: 'Inter', -apple-system, "PingFang SC", sans-serif;
+      background: #efeeea;
+      color: var(--text1);
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+      padding: 32px 20px 80px;
+    }
+    .stage {
+      max-width: 1480px;
+      margin: 0 auto;
+    }
+    .stage-header {
+      max-width: 760px;
+      margin-bottom: 32px;
+    }
+    .stage-header h1 {
+      font-family: 'Source Serif 4', serif;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    .stage-header p {
+      color: #555;
+      font-size: 14.5px;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .row {
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .phone-card {
+      width: 320px;
+      flex-shrink: 0;
+    }
+    /* iPhone-ish frame at scale 0.82 of 390x844 */
+    .phone {
+      width: 320px;
+      height: 692px;
+      border-radius: 44px;
+      background: #0a0a0a;
+      padding: 11px;
+      box-shadow: 0 18px 40px -12px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.06);
+      position: relative;
+    }
+    .screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 33px;
+      background: var(--bg);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .island {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 26px;
+      background: #0a0a0a;
+      border-radius: 14px;
+      z-index: 10;
+    }
+    .status-bar {
+      height: 38px;
+      padding: 0 22px 0 22px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text1);
+      padding-bottom: 4px;
+      flex-shrink: 0;
+    }
+    .status-bar .right {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+    }
+    .app {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .top-bar {
+      height: 48px;
+      padding: 0 12px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--divider);
+    }
+    .top-bar h1 {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      flex: 1;
+      margin: 0;
+      color: var(--text1);
+    }
+    .top-bar .iconbtn {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text1);
+      border: none;
+      cursor: pointer;
+    }
+    .top-bar .iconbtn:active { background: rgba(0,0,0,0.04); }
+    .top-bar .new-btn {
+      background: #18181b;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+    }
+    .top-bar .back-btn {
+      width: 36px;
+      height: 36px;
+      margin-left: -8px;
+    }
+    .top-bar.with-back h1 {
+      font-size: 15.5px;
+      text-align: center;
+      margin-right: 28px;
+    }
+    /* List */
+    .list {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg);
+    }
+    .list-row {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--divider);
+      cursor: pointer;
+    }
+    .list-row:active { background: rgba(0,0,0,0.025); }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      background: var(--bg-soft);
+    }
+    .avatar.conv {
+      background: var(--conv-soft);
+      color: var(--conv-deep);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .avatar.user-pill {
+      background: var(--user-soft);
+      color: var(--user-deep);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .row-body { flex: 1; min-width: 0; }
+    .row-head {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .row-title {
+      font-size: 15.5px;
+      font-weight: 600;
+      color: var(--text1);
+      letter-spacing: -0.01em;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .row-time {
+      font-size: 12px;
+      color: var(--text3);
+      font-feature-settings: "tnum";
+      flex-shrink: 0;
+    }
+    .row-preview {
+      font-size: 13.5px;
+      color: var(--text2);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .row-preview .who {
+      color: var(--text3);
+    }
+    .row-meta {
+      margin-top: 5px;
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .row-meta .badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--bg-soft);
+      color: var(--text2);
+      letter-spacing: 0.05em;
+      font-size: 10.5px;
+    }
+    .row-meta .badge.app { background: #fff3e8; color: #9a3412; }
+    .row-meta .badge.conv { background: var(--conv-soft); color: var(--conv-deep); }
+
+    /* Tab bar */
+    .tab-bar {
+      height: 64px;
+      padding-bottom: 8px;
+      display: flex;
+      flex-shrink: 0;
+      border-top: 1px solid var(--divider);
+      background: var(--bg);
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 11px;
+      color: var(--text3);
+      cursor: pointer;
+    }
+    .tab-item.active { color: var(--text1); font-weight: 600; }
+    .tab-item .ico { font-size: 22px; line-height: 1; }
+
+    /* Empty state */
+    .empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 28px;
+      text-align: center;
+    }
+    .empty-glyph {
+      font-size: 44px;
+      margin-bottom: 16px;
+      filter: grayscale(0.2);
+    }
+    .empty h2 {
+      font-family: 'Source Serif 4', serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0 0 8px;
+      color: var(--text1);
+    }
+    .empty p {
+      font-size: 14px;
+      color: var(--text2);
+      margin: 0 0 22px;
+      line-height: 1.55;
+      max-width: 240px;
+    }
+    .btn-primary {
+      background: #18181b;
+      color: white;
+      border: none;
+      padding: 0 18px;
+      height: 40px;
+      border-radius: 11px;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary.ghost {
+      background: white;
+      color: var(--text1);
+      border: 1px solid var(--border-strong);
+    }
+
+    /* Chat thread */
+    .thread {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 18px 16px;
+    }
+    .msg-block { margin-bottom: 24px; }
+    .msg-author {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .msg-author .dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .msg-author .dot.user { background: var(--user-soft); color: var(--user-deep); }
+    .msg-author .dot.ai { background: var(--conv-soft); color: var(--conv-deep); }
+    .msg-content {
+      font-size: 15.5px;
+      line-height: 1.65;
+      color: var(--text1);
+      letter-spacing: -0.005em;
+    }
+    .msg-content.user {
+      color: var(--text1);
+    }
+    .msg-content p { margin: 0 0 8px; }
+    .msg-content p:last-child { margin-bottom: 0; }
+    .msg-content .pending {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      color: var(--text3);
+    }
+    .msg-content .pending span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+      animation: blink 1.3s infinite;
+    }
+    .msg-content .pending span:nth-child(2) { animation-delay: 0.18s; }
+    .msg-content .pending span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.25; }
+      40% { opacity: 1; }
+    }
+    .day-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0 22px;
+      font-size: 11.5px;
+      color: var(--text3);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .day-divider::before, .day-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--divider);
+    }
+
+    /* Composer */
+    .composer-wrap {
+      flex-shrink: 0;
+      padding: 8px 12px 14px;
+      background: linear-gradient(to top, rgba(255,255,255,1) 70%, rgba(255,255,255,0));
+    }
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      background: #f5f4f0;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 6px 6px 6px 16px;
+      min-height: 44px;
+    }
+    .composer input,
+    .composer .placeholder {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text1);
+      padding: 9px 0;
+    }
+    .composer .placeholder { color: var(--text3); }
+    .composer .send {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #18181b;
+      color: white;
+      border: none;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .composer .send.disabled {
+      background: #d8d6d0;
+      color: white;
+    }
+
+    /* New chat greeting */
+    .greeting {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 24px 60px;
+      text-align: center;
+    }
+    .greeting h2 {
+      font-family: 'Source Serif 4', serif;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      margin: 0 0 28px;
+      color: var(--text1);
+    }
+    .suggest {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-self: stretch;
+    }
+    .suggest button {
+      text-align: left;
+      padding: 12px 14px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      color: var(--text1);
+      cursor: pointer;
+      line-height: 1.4;
+    }
+    .suggest .label {
+      display: block;
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+
+    /* More page */
+    .more {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 24px;
+      background: var(--bg-soft);
+    }
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 8px;
+    }
+    .feature.disabled { opacity: 0.6; }
+    .feature .ico {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: var(--bg-soft);
+      display: grid; place-items: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .feature .body { flex: 1; min-width: 0; }
+    .feature .title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text1);
+    }
+    .feature .desc {
+      font-size: 12.5px;
+      color: var(--text2);
+      margin-top: 1px;
+    }
+    .feature .chev {
+      color: var(--text3);
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .feature .badge {
+      font-size: 10.5px;
+      color: var(--text3);
+      background: var(--bg-soft);
+      padding: 3px 7px;
+      border-radius: 6px;
+    }
+    .more-section-title {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      font-weight: 600;
+      padding: 10px 8px;
+    }
+
+    /* Notes under each phone */
+    .notes {
+      margin-top: 16px;
+      padding: 16px 18px;
+      background: white;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .notes h3 {
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #888;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+    .notes ul {
+      margin: 0;
+      padding-left: 16px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.55;
+    }
+    .notes li { margin-bottom: 4px; }
+    .notes li:last-child { margin-bottom: 0; }
+
+    /* SVG icon helper */
+    .ico-svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ====== Voice flow ====== */
+    /* Mic button in composer (replaces send when input empty) */
+    .composer .mic {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ececea;
+      color: #1a1a1a;
+      border: none;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    /* Recording state */
+    .composer.recording {
+      background: #fff1ec;
+      border-color: #f5c4b0;
+      align-items: center;
+      padding-left: 14px;
+    }
+    .rec-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #dc2626;
+      animation: rec-pulse 1.1s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes rec-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+    .timer {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c2410c;
+      font-feature-settings: "tnum";
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+    }
+    .wave {
+      flex: 1;
+      display: inline-flex;
+      gap: 2px;
+      align-items: center;
+      justify-content: center;
+      height: 28px;
+      margin: 0 6px;
+    }
+    .wave span {
+      width: 2.5px;
+      background: #ea580c;
+      border-radius: 2px;
+      animation: wave-pulse 1.1s infinite ease-in-out;
+    }
+    .wave span:nth-child(1)  { height: 6px;  animation-delay: -0.4s; }
+    .wave span:nth-child(2)  { height: 14px; animation-delay: -0.3s; }
+    .wave span:nth-child(3)  { height: 22px; animation-delay: -0.2s; }
+    .wave span:nth-child(4)  { height: 12px; animation-delay: -0.1s; }
+    .wave span:nth-child(5)  { height: 18px; animation-delay: 0s; }
+    .wave span:nth-child(6)  { height: 26px; animation-delay: 0.1s; }
+    .wave span:nth-child(7)  { height: 16px; animation-delay: 0.2s; }
+    .wave span:nth-child(8)  { height: 22px; animation-delay: 0.3s; }
+    .wave span:nth-child(9)  { height: 10px; animation-delay: 0.4s; }
+    .wave span:nth-child(10) { height: 18px; animation-delay: 0.2s; }
+    .wave span:nth-child(11) { height: 8px;  animation-delay: 0.1s; }
+    .wave span:nth-child(12) { height: 14px; animation-delay: -0.1s; }
+    @keyframes wave-pulse {
+      0%, 100% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1); }
+    }
+    .stop-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #dc2626;
+      color: white;
+      border: none;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .stop-btn .square {
+      width: 11px;
+      height: 11px;
+      background: white;
+      border-radius: 2px;
+    }
+    /* Transcribing state */
+    .composer.transcribing {
+      align-items: center;
+    }
+    .transcribing-text {
+      flex: 1;
+      color: #6b6b6b;
+      font-size: 14.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 0;
+    }
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #d6d6d4;
+      border-top-color: #1a1a1a;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Polish pill above composer */
+    .polish-area {
+      padding: 0 12px 6px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .polish-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      background: white;
+      color: #1a1a1a;
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .polish-pill .sparkle { color: #2383e2; font-size: 11px; }
+    .polish-pill.loading { background: var(--blue-soft); border-color: transparent; color: #1d4ed8; }
+    .polish-pill.loading .spinner {
+      width: 11px; height: 11px;
+      border-width: 1.5px;
+      border-color: rgba(29,78,216,0.3);
+      border-top-color: #1d4ed8;
+    }
+    .polish-pill.done {
+      background: #ecfdf5;
+      border-color: #86efac;
+      color: #14532d;
+    }
+    .polish-hint {
+      font-size: 11.5px;
+      color: var(--text3);
+    }
+    .composer .send.active {
+      background: #18181b;
+    }
+
+    /* ====== Settings ====== */
+    .settings {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg-soft);
+      padding: 14px 14px 24px;
+    }
+    .settings-section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .settings-section-title {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text3);
+      font-weight: 600;
+      padding: 10px 4px 6px;
+    }
+    .setting-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--divider);
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-row .label-block { flex: 1; min-width: 0; }
+    .setting-row .label {
+      font-size: 14.5px;
+      color: var(--text1);
+      line-height: 1.3;
+    }
+    .setting-row .desc {
+      font-size: 12.5px;
+      color: var(--text2);
+      margin-top: 3px;
+      line-height: 1.45;
+    }
+    .toggle {
+      position: relative;
+      width: 51px;
+      height: 31px;
+      background: #e9e9e7;
+      border-radius: 16px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .toggle.on { background: #34c759; }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 27px;
+      height: 27px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.04);
+      transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(20px); }
+    .setting-row .right-text {
+      font-size: 13.5px;
+      color: var(--text2);
+    }
+    .setting-row .chev {
+      color: var(--text3);
+      font-size: 18px;
+    }
+
+    /* Section divider for second row */
+    .section-divider {
+      width: 100%;
+      margin: 36px 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(0,0,0,0.1);
+    }
+    .section-divider h2 {
+      font-family: 'Source Serif 4', serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+    .section-divider .sub {
+      font-size: 13.5px;
+      color: #666;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="stage-header">
+    <h1>手机版 UI · v1</h1>
+    <p>极简留白方向（Claude.ai / ChatGPT mobile 一脉），亮色为主。下方 6 个屏幕展示了主要状态：对话列表、首次空白、新对话、进行中、思考中、更多页。每个屏幕底下有 3-4 条设计要点。</p>
+  </div>
+
+  <div class="row">
+
+    <!-- ============ 1. 对话列表 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M5 15h.01M9 6h.01M9 18h.01M12 4h.01M12 20h.01M15 6h.01M15 18h.01M19 9h.01M19 15h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" ry="1" fill="currentColor" stroke="none"/><rect x="22" y="4" width="1.5" height="4" rx="0.5" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar">
+              <h1>对话</h1>
+              <button class="iconbtn new-btn" aria-label="新对话">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+            <div class="list">
+
+              <div class="list-row">
+                <div class="avatar conv">💬</div>
+                <div class="row-body">
+                  <div class="row-head">
+                    <span class="row-title">为什么 SQLite 比 PG 快</span>
+                    <span class="row-time">刚刚</span>
+                  </div>
+                  <div class="row-preview"><span class="who">Claude：</span>主要原因是 SQLite 不需要跨进程通信、嵌入式调用、固定的小事务路径……</div>
+                  <div class="row-meta"><span class="badge conv">对话</span> · 6 条</div>
+                </div>
+              </div>
+
+              <div class="list-row">
+                <div class="avatar">📡</div>
+                <div class="row-body">
+                  <div class="row-head">
+                    <span class="row-title">Plurai</span>
+                    <span class="row-time">2 小时前</span>
+                  </div>
+                  <div class="row-preview"><span class="who">你：</span>那这个产品最强的护城河到底是什么？</div>
+                  <div class="row-meta"><span class="badge app">PH · App</span> · 14 条</div>
+                </div>
+              </div>
+
+              <div class="list-row">
+                <div class="avatar conv">💬</div>
+                <div class="row-body">
+                  <div class="row-head">
+                    <span class="row-title">下周日本行程建议</span>
+                    <span class="row-time">昨天</span>
+                  </div>
+                  <div class="row-preview"><span class="who">Claude：</span>你这个时间段樱花已经过了主花期，但可以考虑去东北的青森……</div>
+                  <div class="row-meta"><span class="badge conv">对话</span> · 22 条</div>
+                </div>
+              </div>
+
+              <div class="list-row">
+                <div class="avatar">🗺</div>
+                <div class="row-body">
+                  <div class="row-head">
+                    <span class="row-title">Fog of World</span>
+                    <span class="row-time">昨天</span>
+                  </div>
+                  <div class="row-preview"><span class="who">你：</span>这个游戏化怎么套到健身记录上？</div>
+                  <div class="row-meta"><span class="badge app">PH · App</span> · 7 条</div>
+                </div>
+              </div>
+
+              <div class="list-row">
+                <div class="avatar conv">💬</div>
+                <div class="row-body">
+                  <div class="row-head">
+                    <span class="row-title">React 19 用 Suspense</span>
+                    <span class="row-time">3 月前</span>
+                  </div>
+                  <div class="row-preview"><span class="who">Claude：</span>新的 use() hook 对 promise 的处理在 19 里有几个细节要注意……</div>
+                  <div class="row-meta"><span class="badge conv">对话</span> · 9 条</div>
+                </div>
+              </div>
+
+              <div class="list-row">
+                <div class="avatar">📷</div>
+                <div class="row-body">
+                  <div class="row-head">
+                    <span class="row-title">摄影 KOL Studio</span>
+                    <span class="row-time">5 月前</span>
+                  </div>
+                  <div class="row-preview"><span class="who">你：</span>定价模型为什么不学 Lightroom Mobile？</div>
+                  <div class="row-meta"><span class="badge app">AS-CN · App</span> · 4 条</div>
+                </div>
+              </div>
+
+            </div>
+            <div class="tab-bar">
+              <div class="tab-item active">
+                <span class="ico">💬</span>
+                <span>对话</span>
+              </div>
+              <div class="tab-item">
+                <span class="ico">⋯</span>
+                <span>更多</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>对话列表</h3>
+        <ul>
+          <li><b>顶栏右上「+」</b>是黑底圆角实心按钮，比之前的灰色＋更醒目，但仍然克制</li>
+          <li>裸对话用 💬 蓝头像，App-bound 用 emoji 图标 + 橙色 PH/AS 徽标，一眼能区分</li>
+          <li>预览行带「你：/ Claude：」前缀但配色淡，让标题更突出</li>
+          <li>时间用相对时间右对齐；3 个月前回退到具体月份</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 2. 空状态 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar">
+              <h1>对话</h1>
+              <button class="iconbtn new-btn" aria-label="新对话">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+            <div class="empty">
+              <div class="empty-glyph">💭</div>
+              <h2>从这里开始</h2>
+              <p>什么都可以问。也可以去「更多 → Hot App Radar」选一个 app 聊它的卷宗。</p>
+              <button class="btn-primary">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                新对话
+              </button>
+            </div>
+            <div class="tab-bar">
+              <div class="tab-item active">
+                <span class="ico">💬</span>
+                <span>对话</span>
+              </div>
+              <div class="tab-item">
+                <span class="ico">⋯</span>
+                <span>更多</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>空状态（首次进入）</h3>
+        <ul>
+          <li>大字 serif 标题「从这里开始」拉出 hero 感，避免空白页面冷清</li>
+          <li>主 CTA 用黑底大按钮，唯一焦点</li>
+          <li>提示句**顺便指路**到「更多」，引导用户发现 Radar</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 3. 新对话首屏 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>新对话</h1>
+            </div>
+            <div class="greeting">
+              <h2>晚上好</h2>
+              <div class="suggest">
+                <button><span class="label">写作</span>帮我把这段产品描述压到 50 字以内</button>
+                <button><span class="label">分析</span>这条数据曲线背后可能的原因</button>
+                <button><span class="label">脑暴</span>给我 5 个反直觉的产品 idea</button>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="composer">
+                <div class="placeholder">问点什么…</div>
+                <button class="send disabled" aria-label="发送">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>新对话首屏</h3>
+        <ul>
+          <li>顶部「新对话」+ 返回按钮——还没标题前就用占位</li>
+          <li>问候语用 serif 字号，配 3 条**建议输入**降低空白焦虑</li>
+          <li>composer 是圆角药丸 + 圆形发送，输入态变色——比当前 ChatDrawer 那个矩形输入框克制很多</li>
+          <li>底栏隐藏，沉浸聊天</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 4. 进行中对话 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>SQLite vs PG</h1>
+            </div>
+            <div class="thread">
+              <div class="day-divider">今天</div>
+
+              <div class="msg-block">
+                <div class="msg-author">
+                  <span class="dot user">我</span>
+                  <span>我</span>
+                </div>
+                <div class="msg-content user">
+                  为什么我看 benchmark SQLite 在小事务上比 Postgres 快这么多？
+                </div>
+              </div>
+
+              <div class="msg-block">
+                <div class="msg-author">
+                  <span class="dot ai">C</span>
+                  <span>Claude</span>
+                </div>
+                <div class="msg-content">
+                  <p>核心是<b>它跑在你进程里</b>，没有跨进程通信、没有连接握手、没有线性可写日志同步给独立 daemon 的开销。</p>
+                  <p>SQLite 一次小写就是几次 syscall，而 PG 即便最优化也要：客户端 → 网络 → backend 进程 → WAL → fsync → 返回。</p>
+                </div>
+              </div>
+
+              <div class="msg-block">
+                <div class="msg-author">
+                  <span class="dot user">我</span>
+                  <span>我</span>
+                </div>
+                <div class="msg-content user">
+                  那 WAL 模式打开后呢？还会差很多吗？
+                </div>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="composer">
+                <div class="placeholder">回复…</div>
+                <button class="send disabled" aria-label="发送">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>进行中对话</h3>
+        <ul>
+          <li>无气泡设计——每条消息只用 author 标签 + 全宽文本，document 气质</li>
+          <li>头像缩成 18 圆点 + 字母（T 橙、C 蓝），节省横向</li>
+          <li>「今天」分隔横线在跨日才出现</li>
+          <li>顶栏标题就是 Claude 自动起的 5-10 字标题</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 5. Pending / 思考中 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>SQLite vs PG</h1>
+            </div>
+            <div class="thread">
+              <div class="msg-block">
+                <div class="msg-author">
+                  <span class="dot user">我</span>
+                  <span>我</span>
+                </div>
+                <div class="msg-content user">
+                  那 WAL 模式打开后呢？还会差很多吗？
+                </div>
+              </div>
+
+              <div class="msg-block">
+                <div class="msg-author">
+                  <span class="dot ai">C</span>
+                  <span>Claude</span>
+                </div>
+                <div class="msg-content">
+                  <span class="pending">
+                    <span></span><span></span><span></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="composer">
+                <div class="placeholder" style="opacity:0.5">Claude 正在回复…</div>
+                <button class="send disabled" aria-label="发送">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>思考中</h3>
+        <ul>
+          <li>不写「思考中」三个字——只用三个跳动的小圆点，最小信号</li>
+          <li>composer 占位文案变成「Claude 正在回复…」，发送按钮 disabled</li>
+          <li>用户那条消息已经落定（不再是 optimistic），保持视觉稳定</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 6. 更多 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar">
+              <h1>更多</h1>
+            </div>
+            <div class="more">
+              <div class="more-section-title">已接入</div>
+              <div class="feature">
+                <div class="ico">📡</div>
+                <div class="body">
+                  <div class="title">Hot App Radar</div>
+                  <div class="desc">浏览每日扫描的 app/game 卷宗</div>
+                </div>
+                <span class="chev">›</span>
+              </div>
+              <div class="more-section-title">即将推出</div>
+              <div class="feature disabled">
+                <div class="ico">📊</div>
+                <div class="body">
+                  <div class="title">每日报告</div>
+                  <div class="desc">扫描摘要 / 趋势分析</div>
+                </div>
+                <span class="badge">规划中</span>
+              </div>
+              <div class="feature disabled">
+                <div class="ico">💡</div>
+                <div class="body">
+                  <div class="title">我的点子</div>
+                  <div class="desc">distill 出的笔记汇总</div>
+                </div>
+                <span class="badge">规划中</span>
+              </div>
+              <div class="feature disabled">
+                <div class="ico">🎮</div>
+                <div class="body">
+                  <div class="title">Games 频道</div>
+                  <div class="desc">游戏雷达专属视图</div>
+                </div>
+                <span class="badge">规划中</span>
+              </div>
+              <div class="feature disabled">
+                <div class="ico">⚙️</div>
+                <div class="body">
+                  <div class="title">设置</div>
+                  <div class="desc">主题、密码、数据导出</div>
+                </div>
+                <span class="badge">规划中</span>
+              </div>
+            </div>
+            <div class="tab-bar">
+              <div class="tab-item">
+                <span class="ico">💬</span>
+                <span>对话</span>
+              </div>
+              <div class="tab-item active">
+                <span class="ico">⋯</span>
+                <span>更多</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>更多</h3>
+        <ul>
+          <li>分组「已接入 / 即将推出」让占位项自然过渡，不像「全是空 Tab」</li>
+          <li>Radar 卡片纯白突出，placeholder 卡片 0.6 不透明 + 「规划中」徽标</li>
+          <li>每张卡片自带圆角 + 软边框，比纯文字列表有手感</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-divider">
+    <h2>语音输入流程</h2>
+    <span class="sub">7 → 11：从空闲到送进输入框，一条线</span>
+  </div>
+
+  <div class="row">
+
+    <!-- ============ 7. Composer 空闲（带麦克风） ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>SQLite vs PG</h1>
+            </div>
+            <div class="thread">
+              <div class="msg-block">
+                <div class="msg-author"><span class="dot user">我</span><span>我</span></div>
+                <div class="msg-content user">那 WAL 模式打开后呢？还会差很多吗？</div>
+              </div>
+              <div class="msg-block">
+                <div class="msg-author"><span class="dot ai">C</span><span>Claude</span></div>
+                <div class="msg-content">
+                  WAL 把同步写换成 append-only，差距会缩小到 2-3 倍。但只要 fsync 频率不变，PG 必须等的那一拍就在那。
+                </div>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="composer">
+                <div class="placeholder">回复…</div>
+                <button class="mic" aria-label="录音">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="3" width="6" height="12" rx="3"/>
+                    <path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>7. 空闲 — 输入框带麦克风</h3>
+        <ul>
+          <li>输入框为空时，右侧只显示<b>麦克风</b>（灰色软按钮）</li>
+          <li>一旦键入文字，麦克风会变回发送按钮（标准 WhatsApp 模式）</li>
+          <li>位置在文本区右内侧，单手大拇指能舒服够到</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 8. 录音中 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>SQLite vs PG</h1>
+            </div>
+            <div class="thread">
+              <div class="msg-block">
+                <div class="msg-author"><span class="dot user">我</span><span>我</span></div>
+                <div class="msg-content user">那 WAL 模式打开后呢？还会差很多吗？</div>
+              </div>
+              <div class="msg-block">
+                <div class="msg-author"><span class="dot ai">C</span><span>Claude</span></div>
+                <div class="msg-content">
+                  WAL 把同步写换成 append-only，差距会缩小到 2-3 倍。但只要 fsync 频率不变，PG 必须等的那一拍就在那。
+                </div>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="composer recording">
+                <div class="rec-dot"></div>
+                <span class="timer">00:08</span>
+                <div class="wave">
+                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <button class="stop-btn" aria-label="停止录音">
+                  <span class="square"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>8. 录音中</h3>
+        <ul>
+          <li>整条 composer 染上暖色背景，强提示「正在录」</li>
+          <li>左侧：脉动红点 + 实时计时（tabular nums，字宽稳定不抖）</li>
+          <li>中间：小波形动画（不是真波形，是 12 根错相位条），暗示麦克风活着</li>
+          <li>右侧停止按钮：红圆 + 白方块（iOS 系统语音备忘录的语义）</li>
+          <li>键盘自动收起（不需要打字），但底栏不再显示</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 9. 转写中 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>SQLite vs PG</h1>
+            </div>
+            <div class="thread">
+              <div class="msg-block">
+                <div class="msg-author"><span class="dot user">我</span><span>我</span></div>
+                <div class="msg-content user">那 WAL 模式打开后呢？还会差很多吗？</div>
+              </div>
+              <div class="msg-block">
+                <div class="msg-author"><span class="dot ai">C</span><span>Claude</span></div>
+                <div class="msg-content">
+                  WAL 把同步写换成 append-only，差距会缩小到 2-3 倍。但只要 fsync 频率不变，PG 必须等的那一拍就在那。
+                </div>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="polish-area">
+                <div class="polish-hint">音频已上传 · 火山 ASR</div>
+              </div>
+              <div class="composer transcribing">
+                <div class="transcribing-text">
+                  <span class="spinner"></span>
+                  转写中…
+                </div>
+                <button class="send disabled" aria-label="发送" style="opacity:0.5">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>9. 转写中</h3>
+        <ul>
+          <li>composer 回到中性配色，左侧 spinner + 「转写中…」</li>
+          <li>顶部小灰字「音频已上传 · 火山 ASR」让用户知道发生了什么</li>
+          <li>典型耗时 1-3s（一句话识别），不需要 cancel 按钮</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 10. 转写完成 + 整理选项 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>SQLite vs PG</h1>
+            </div>
+            <div class="thread">
+              <div class="msg-block">
+                <div class="msg-author"><span class="dot ai">C</span><span>Claude</span></div>
+                <div class="msg-content">
+                  WAL 把同步写换成 append-only，差距会缩小到 2-3 倍。但只要 fsync 频率不变，PG 必须等的那一拍就在那。
+                </div>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="polish-area">
+                <button class="polish-pill">
+                  <span class="sparkle">✨</span> 整理一下
+                </button>
+                <span class="polish-hint">用 Claude 顺成书面语</span>
+              </div>
+              <div class="composer">
+                <div style="flex:1;font-size:15px;color:var(--text1);padding:9px 0;line-height:1.4">
+                  那个 WAL 你刚才说会缩到两三倍是吧 我想再问下如果说我把 fsync 频率也调低 是不是就能更接近 SQLite 了
+                </div>
+                <button class="send active" aria-label="发送">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>10. 转写完成 — 选择整理或直接送</h3>
+        <ul>
+          <li>转写文字直接落进输入框（保留口语原貌：缺标点、有「那个」「是吧」）</li>
+          <li>上方浮出 <b>✨ 整理一下</b> 药丸按钮 + 一句解释</li>
+          <li>右侧发送按钮变黑（active），用户可以直接送，也可以先整理</li>
+          <li>用户也可以手动改文字再送（点输入框就进编辑）</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 11. 整理后 + 设置开关 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>SQLite vs PG</h1>
+            </div>
+            <div class="thread">
+              <div class="msg-block">
+                <div class="msg-author"><span class="dot ai">C</span><span>Claude</span></div>
+                <div class="msg-content">
+                  WAL 把同步写换成 append-only，差距会缩小到 2-3 倍。但只要 fsync 频率不变，PG 必须等的那一拍就在那。
+                </div>
+              </div>
+            </div>
+            <div class="composer-wrap">
+              <div class="polish-area">
+                <button class="polish-pill done">
+                  ✓ 已整理 · 撤销
+                </button>
+                <span class="polish-hint">原稿被 Claude 顺过</span>
+              </div>
+              <div class="composer">
+                <div style="flex:1;font-size:15px;color:var(--text1);padding:9px 0;line-height:1.4">
+                  你刚说 WAL 能缩到两三倍。如果再把 fsync 频率调低，是不是就更接近 SQLite 了？
+                </div>
+                <button class="send active" aria-label="发送">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>11. 整理完成</h3>
+        <ul>
+          <li>药丸变绿色 ✓ + 「撤销」选项（点一下回原稿）</li>
+          <li>文本被顺成更书面化的版本：补标点、去口头禅、调语序</li>
+          <li>整理过程在 polish-pill 上显示 spinner（约 2-4s，跟正常 chat 一次往返同量级）</li>
+          <li>如果用户在「设置」里勾了「自动整理」，则跳过 10 直接来 11</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ============ 12. 设置页 ============ -->
+    <div class="phone-card">
+      <div class="phone">
+        <div class="island"></div>
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span class="right">
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M2 12h.01M5 9h.01M9 6h.01M12 4h.01M15 6h.01M19 9h.01M22 12h.01"/></svg>
+              <svg class="ico-svg" style="width:15px;height:15px;stroke-width:2.2" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0"/></svg>
+              <svg class="ico-svg" style="width:24px;height:12px;stroke-width:1.5" viewBox="0 0 24 12"><rect x="1" y="2" width="20" height="8" rx="2"/><rect x="2.5" y="3.5" width="17" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="top-bar with-back">
+              <button class="iconbtn back-btn" aria-label="返回">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <h1>设置</h1>
+            </div>
+            <div class="settings">
+
+              <div class="settings-section-title">语音输入</div>
+              <div class="settings-section">
+                <div class="setting-row">
+                  <div class="label-block">
+                    <div class="label">录音转写后自动整理</div>
+                    <div class="desc">用 Claude 把口语顺成更通顺的书面语，多 2-4 秒</div>
+                  </div>
+                  <div class="toggle on"></div>
+                </div>
+                <div class="setting-row">
+                  <div class="label-block">
+                    <div class="label">默认语言</div>
+                  </div>
+                  <span class="right-text">中文（普通话）</span>
+                  <span class="chev">›</span>
+                </div>
+              </div>
+
+              <div class="settings-section-title">外观</div>
+              <div class="settings-section">
+                <div class="setting-row">
+                  <div class="label-block">
+                    <div class="label">主题</div>
+                  </div>
+                  <span class="right-text">跟随系统</span>
+                  <span class="chev">›</span>
+                </div>
+                <div class="setting-row">
+                  <div class="label-block">
+                    <div class="label">字号</div>
+                  </div>
+                  <span class="right-text">中</span>
+                  <span class="chev">›</span>
+                </div>
+              </div>
+
+              <div class="settings-section-title">账号</div>
+              <div class="settings-section">
+                <div class="setting-row">
+                  <div class="label-block">
+                    <div class="label">登录账号</div>
+                  </div>
+                  <span class="right-text">your-username</span>
+                </div>
+                <div class="setting-row">
+                  <div class="label-block">
+                    <div class="label" style="color:#dc2626">退出登录</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notes">
+        <h3>12. 设置页（更多 → 设置）</h3>
+        <ul>
+          <li><b>语音输入</b>是第一组，最显眼。toggle 默认<b>开</b>——多数人想要顺口</li>
+          <li>iOS 风分组卡片，每组带顶部标题，圆角 + 软分隔</li>
+          <li>外观、账号是为以后铺路（暗色、字号、改密码）</li>
+          <li>设置入口：从「更多」页那张「⚙️ 设置」卡进，不再是占位</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="max-width:760px;margin-top:48px;padding:20px 22px;background:white;border-radius:14px;border:1px solid rgba(0,0,0,0.05);">
+    <h3 style="font-size:13px;letter-spacing:0.04em;text-transform:uppercase;color:#888;margin:0 0 10px;font-weight:600;">说明 / 待定</h3>
+    <ul style="margin:0;padding-left:18px;font-size:13.5px;color:#444;line-height:1.65;">
+      <li><b>这是静态稿</b>——不能点不能滚，只用来对方向。React 落地按这版做</li>
+      <li><b>头像方案</b>：列表用 40 圆角方块，对话内用 18 圆点 + 字母。如果你喜欢「全程无头像」（更 Claude.ai）也能去掉</li>
+      <li><b>建议输入</b>（新对话首屏的 3 个 chip）目前是写死的；可以后续加规则或让 Claude 根据时间/最近聊过的话题动态出</li>
+      <li><b>语音 7-12</b>：录音、转写中、转写完、整理后、设置——5 个状态都画了。麦克风按钮位置和波形动画方向由你定，不喜欢可以小调</li>
+      <li><b>暗色模式</b>晚一步，先跑通亮色</li>
+      <li><b>没设计的</b>：长按消息（复制/重发）、对话重命名、删除对话、长按麦克风「按住录音/松开发送」（vs 现在的「点一下/再点一下」）——这些都是后续迭代</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

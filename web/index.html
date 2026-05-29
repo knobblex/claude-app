@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hot App Radar</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">📡</span>
+      <h1>Hot App Radar</h1>
+    </div>
+    <div class="filters">
+      <button id="filter-all" class="btn-filter active" data-filter="all">
+        全部 <span class="count" id="count-all">·</span>
+      </button>
+      <button id="filter-fav" class="btn-filter" data-filter="fav">
+        ⭐ 收藏 <span class="count" id="count-fav">·</span>
+      </button>
+      <input id="search" type="search" placeholder="按名称 / 标签 搜索…">
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-empty">加载中…</div>
+    </aside>
+
+    <section class="detail" id="detail">
+      <div class="detail-empty" id="detail-empty">
+        <div class="hint">
+          <p class="hint-big">👈 从左侧选一个 App</p>
+          <p>· 看完整卷宗</p>
+          <p>· ⭐ 收藏 / 写笔记 / 打标签</p>
+          <p>· 跟 Claude 继续聊这个 App 的细节</p>
+        </div>
+      </div>
+      <article class="detail-content" id="detail-content" hidden></article>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

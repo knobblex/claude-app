@@ -1,0 +1,22 @@
+{
+  "id": "ideas",
+  "name": "点子库",
+  "icon": "lightbulb",
+  "version": 1,
+  "backend": {
+    "module": "app.ideas.api",
+    "prefix": "/api/ideas",
+    "data_dirs": {
+      "root": ".",
+      "ideas": "ideas",
+      "ideas_history": "ideas/history",
+      "conversations": "conversations",
+      "files": "files"
+    }
+  },
+  "frontend": {
+    "entry": "ui/index.ts",
+    "mobile": { "openFrom": "projects", "label": "点子库" },
+    "desktop": { "section": "projects", "label": "点子库" }
+  }
+}

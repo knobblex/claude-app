@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-title" content="Hot App Radar" />
+    <title>Hot App Radar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // iOS Safari ignores user-scalable=no on the viewport meta. Block its
+      // pinch-to-zoom + double-tap-to-zoom via the proprietary gesture events.
+      // (Has no effect on Android / desktop, where the viewport meta already wins.)
+      document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+      document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
+      document.addEventListener('gestureend', function (e) { e.preventDefault(); }, { passive: false });
+      // Block iOS double-tap zoom (no double-tap within 350ms).
+      var lastTouchEnd = 0;
+      document.addEventListener('touchend', function (e) {
+        var now = Date.now();
+        if (now - lastTouchEnd <= 350) e.preventDefault();
+        lastTouchEnd = now;
+      }, { passive: false });
+
+      // Keyboard detection — needs to be DEFENSIVE. In iOS PWA standalone
+      // mode (and even in mobile Safari sometimes), visualViewport.height is
+      // already ~200pt smaller than window.innerHeight even when no soft
+      // keyboard is up — iOS excludes status bar / home indicator zones from
+      // visualViewport. So we CANNOT rely on the visualViewport vs innerHeight
+      // delta alone — that would falsely trigger "keyboard up" and shrink the
+      // layout, leaving a huge whitespace below the composer.
+      //
+      // Strategy: only set .kb-open if a text input/textarea is currently
+      // focused (and there's a viewport delta). When neither, kb-open is off
+      // and layout uses the full 100dvh.
+      // iOS PWA standalone detection — display-mode media query is unreliable
+      // on iOS, so use the iOS-specific navigator.standalone flag instead.
+      // Sets .ios-pwa on <html> so CSS can compensate for iOS's quirky
+      // 100dvh = (screen − status bar height) reporting in standalone mode.
+      if (typeof navigator !== 'undefined' && navigator.standalone === true) {
+        document.documentElement.classList.add('ios-pwa');
+      }
+
+      var __inputFocused = false;
+      function __isTextField(el) {
+        if (!el) return false;
+        var t = el.tagName;
+        return t === 'INPUT' || t === 'TEXTAREA' || el.isContentEditable;
+      }
+      document.addEventListener('focusin', function (e) {
+        if (__isTextField(e.target)) { __inputFocused = true; updateVvh(); }
+      });
+      document.addEventListener('focusout', function () {
+        __inputFocused = false;
+        setTimeout(updateVvh, 50); // give iOS a tick to restore viewport
+      });
+      function updateVvh() {
+        var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+        document.documentElement.style.setProperty('--vvh', h + 'px');
+        var kb = Math.max(0, window.innerHeight - h);
+        document.documentElement.style.setProperty('--kb-h', kb + 'px');
+        // Only treat as keyboard-up when a text field has focus AND the
+        // viewport delta is meaningfully large.
+        document.documentElement.classList.toggle('kb-open', __inputFocused && kb > 100);
+      }
+      updateVvh();
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', updateVvh);
+        window.visualViewport.addEventListener('scroll', updateVvh);
+      }
+      window.addEventListener('resize', updateVvh);
+      window.addEventListener('orientationchange', updateVvh);
+
+      // === TEMP: debug overlay for layout diagnosis. Remove after issue fixed. ===
+      // URL param ?debug=1 enables, or set localStorage.debugViewport='1'
+      try {
+        var __debug = location.search.indexOf('debug=1') !== -1
+          || (typeof localStorage !== 'undefined' && localStorage.getItem('debugViewport') === '1');
+        if (__debug) {
+          var dbg = document.createElement('div');
+          dbg.id = '__vvh-debug';
+          dbg.style.cssText = 'position:fixed;top:env(safe-area-inset-top);left:8px;z-index:99999;background:rgba(20,20,20,0.85);color:#fff;padding:8px 10px;border-radius:6px;font:11px/1.4 ui-monospace,monospace;pointer-events:none;max-width:180px;white-space:pre';
+          document.documentElement.appendChild(dbg);
+          // Probe element to read computed safe-area-inset-* values
+          var __probe = document.createElement('div');
+          __probe.style.cssText = 'position:fixed;top:-100px;left:-100px;width:1px;height:1px;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);';
+          document.body.appendChild(__probe);
+          function __refreshDbg() {
+            var vv = window.visualViewport;
+            var bodyH = document.body && document.body.offsetHeight;
+            var rootEl = document.getElementById('root');
+            var rootH = rootEl ? rootEl.offsetHeight : '-';
+            var ps = getComputedStyle(__probe);
+            // iOS-specific PWA flag
+            var iosStand = (typeof navigator !== 'undefined' && navigator.standalone === true);
+            // Probe 100dvh, 100vh, and --app-h independently
+            var hp = document.createElement('div');
+            hp.style.cssText = 'position:fixed;left:-1px;width:1px;visibility:hidden;height:100dvh;';
+            document.body.appendChild(hp);
+            var dvh = hp.offsetHeight;
+            hp.style.height = '100vh';
+            var vh = hp.offsetHeight;
+            hp.style.height = 'var(--app-h)';
+            var apph = hp.offsetHeight;
+            document.body.removeChild(hp);
+            dbg.textContent =
+              'inner:' + window.innerHeight +
+              '\nvv:   ' + (vv ? vv.height : 'n/a') +
+              '\nkb-h: ' + (vv ? Math.max(0, window.innerHeight - vv.height) : 0) +
+              '\nfocus:' + __inputFocused +
+              '\nkb-open:' + document.documentElement.classList.contains('kb-open') +
+              '\nios-pwa:' + document.documentElement.classList.contains('ios-pwa') +
+              '\nbody: ' + bodyH +
+              '\n#root:' + rootH +
+              '\ndvh:  ' + dvh +
+              '\nvh:   ' + vh +
+              '\napp-h:' + apph +
+              '\nsa-t: ' + ps.paddingTop +
+              '\nsa-b: ' + ps.paddingBottom +
+              '\nscrnH:' + (window.screen && window.screen.height) +
+              '\nstand:' + (window.matchMedia('(display-mode: standalone)').matches) +
+              '\niOS-st:' + iosStand;
+          }
+          __refreshDbg();
+          setInterval(__refreshDbg, 250);
+        }
+      } catch (e) {}
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
